@@ -1,0 +1,28 @@
+####################################################################################
+# (C) 2016 Tyler W. H. Backman
+# Purpose: Supporting Information for Target Selectivity Manuscript
+####################################################################################
+
+# Note this is a project workflow (in comments) mixed in with actual analysis steps
+#	(in Makefile syntax)
+
+# generate file with Target selectivity, cluster selectivity,
+# domain selectivity, and Promiscuity probabilities or all highly screened active compounds
+working/supportingInfo_promiscuity.tab: src/supportingInfo_promiscuity.R working/selectivityCountsIndividual.txt working/selectivityCountskClust.txt working/selectivityCountsdomains.txt working/promiscuityProbability.tab working/highlyScreenedCids.txt working/activeCids.txt
+    $^ $@
+    
+# generate Fully screened compound vs target cluster binary matrix
+working/supportingInfo_fullyScreened.tab: src/supportingInfo_fullyScreened.R working/fullyScreened.RData working/clusterAnnotations.csv
+    $^ $@
+    
+# Purpose: produce list of Pfam domains including median target, cluster, and domain selectivities for FDA approved and non-FDA compounds
+working/supportingInfo_domains.tab: src/supportingInfo_domains.R working/targetSelectivityByDomain.tab
+    $^ $@
+
+# Purpose: produce bicluster lists for supplement
+working/supportingInfo_biclusterCids.xls: src/supportingInfo_biclusters.R working/biClusters.RData working/clusterAnnotations.csv working/supportingInfo_biclusterCids.xls
+	$^ $@ working/supportingInfo_biclusterTargets.xls
+
+# Purpose: produce list of novel drug-target pairs
+working/supportingInfo_novelTargets.xls: src/supportingInfo_novelTargets.R working/drugComparisonMatrix.RData working/clusterAnnotations.csv
+    $^ $@

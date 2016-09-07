@@ -1,0 +1,42 @@
+################################################################################
+# (C) 2016 Tyler W. H. Backman
+# Tables and figures for annotation comparison and biclustering sections
+################################################################################
+
+# perform comparison between bioassay and drugbank targets and store as matrix
+# drug vs cluster object is called "drugComparisonMatrix"
+working/drugComparisonMatrix.RData: src/comparisonMatrix.R $(databaseFile) working/highlyScreenedCids.txt working/curatedClusters.txt working/drug_target_uniprot_links.csv working/drugbank_links.csv
+	$^ $@
+
+# perform biclustering to identify target/drug groups
+working/biClusters.RData: src/biclusterMatrix.R working/drugComparisonMatrix.RData src/bicbin.R
+	$^ $@ $(cores)
+
+# analyze each bicluster one at a time
+working/perClusterAnalysis: src/perClusterAnalysis.R \
+							working/drugComparisonMatrix.RData \
+							working/biClusters.RData \
+							working/curatedClusters.txt \
+							working/clusterAnnotations.csv \
+							working/drugbank_links.csv \
+							working/structureClusterDrugs.tab \
+							working/combinedTargetDomainsTwoCols \
+							working/Pfam-A.clans.tsv
+	mkdir -p $@
+	$^ $@ $(cores)
+
+# make MDS plot of biclusters (color) vs structure (spatial)
+working/biclusterMDS.pdf: src/biclusterMDS.R working/biClusters.RData working/drugbank.sdf working/drugbank_links.csv
+	$^ $@	
+
+# make heatmap of GO terms vs biclusters
+working/biclusterGoScatter.pdf: src/biclusterGoScatter.R working/perClusterAnalysis working/clusterGOannotations.csv working/clusterAnnotations.csv working/drugComparisonMatrix.RData
+	$^ $@
+
+# make graph object of drug target matrix
+working/drugComparisonGraph.gml: src/biclusterBipartiteGraph.R \
+                                 working/drugComparisonMatrix.RData \
+                                 working/biClusters.RData \
+                                 working/clusterGOslimAnnotations.csv \
+                                 working/clusterAnnotations.csv
+    $^ $@

@@ -1,0 +1,15 @@
+# History files
+.vagrant/*
+.Rhistory
+
+# Example code in package build process
+*-Ex.R
+*.swp
+*.DS_Store
+.nfs*
+working/*
+make.sh*
+formatdb.log
+error.log
+Rplots.pdf
+.Rproj.user

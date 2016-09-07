@@ -1,0 +1,8 @@
+################################################################################
+# (C) 2016 Tyler W. H. Backman
+# Tables and figures for Target Protein network
+################################################################################
+
+# create graph gml object
+working/tpnet.gml: src/targetProteinGraph.R working/cidsVStargets.RData working/promiscuityProbability.tab $(databaseFile)
+	$^ $@ $(cores)

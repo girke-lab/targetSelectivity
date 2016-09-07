@@ -1,0 +1,28 @@
+################################################################################
+# (C) 2016 Tyler W. H. Backman
+# Tables and figures for promiscuity probability and promiscuous binders sections
+################################################################################
+
+# compute promiscuity probability for all compounds
+working/promiscuityProbability.tab: src/computePromiscuityProbability.R working/cidsVStargets.RData
+	$^ $@ $(cores)
+
+# plot promiscuity distribution
+working/hitratioDistribution.pdf: src/promiscuityDistributionPlot.R $(databaseFile) working/drugbank_links.csv working/highlyScreenedCids.txt working/activeCids.txt
+	$^ $@
+
+# plot promiscuity distribution
+working/hitratioDistributionAggregators.pdf: src/promiscuityDistributionPlotAggregators.R $(databaseFile) working/drugbank_links.csv working/highlyScreenedCids.txt working/activeCids.txt
+	$^ $@
+
+# find pains compounds:
+working/activeCompoundsPAINS.txt: src/findPAINS.py working/bioassayCompounds.sdf
+	$< --infile working/bioassayCompounds.sdf --unparseable working/activeCompoundsPAINSu.txt --outfile $@ 
+
+# fix unparseable PAINS
+working/activeCompoundsPAINSuFixed.txt: src/fixUnparseablePains.R working/activeCompoundsPAINS.txt working/bioassayCompounds.sdf
+	$< working/activeCompoundsPAINSu.txt working/bioassayCompounds.sdf $@
+
+# plot promiscuity distribution
+working/hitratioDistributionPAINS.pdf: src/promiscuityDistributionPlotPAINS.R $(databaseFile) working/drugbank_links.csv working/highlyScreenedCids.txt working/activeCids.txt working/activeCompoundsPAINS.txt working/activeCompoundsPAINSuFixed.txt
+	$^ $@

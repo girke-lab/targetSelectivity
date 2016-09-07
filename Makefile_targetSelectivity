@@ -1,0 +1,62 @@
+################################################################################
+# (C) 2016 Tyler W. H. Backman
+# Tables and figures for Protein Target Diversity, Target Selectivity Distribution
+# and Selectivity by Target Pfam Domains
+################################################################################
+
+# get go terms for all targets
+working/uniprotGOannotations.csv: src/uniprot_annotator.py $(databaseFile) working/gene_association.goa_uniprot
+	$< --database=$(databaseFile) --uniprot=working/gene_association.goa_uniprot --outfile=$@
+
+# build GI->GO annotations table
+working/targetGOannotations.csv: src/targetGOannotations.R working/uniprotGOannotations.csv $(databaseFile)
+	$^ $@
+
+# find GO slim annotations for individual targets
+working/targetGOslimAnnotations.csv: src/clusterGOslimAnnotations.R working/targetGOannotations.csv working/goslim_generic.obo
+	$^ $@
+
+# plot distribution of domain activity
+working/compoundsByDomain.pdf: src/compounds_by_domain.R working/cidsVStargets.RData working/drugbank_links.csv $(databaseFile) working/Pfam-A.clans.tsv working/humanDomainsTwoCols working/PfamResidueLengths.tab
+	$^ $(cores) $@
+
+# compute distribution of target selectivity values
+working/selectivityCountsIndividual.txt: src/computeSelectivity.R $(databaseFile) working/highlyScreenedCids.txt 
+	$^ $@ $(cores) FALSE keepOne
+
+# compute distribution of kClust selectivity values
+working/selectivityCountskClust.txt: src/computeSelectivity.R $(databaseFile) working/highlyScreenedCids.txt 
+	$^ $@ $(cores) kClust keepOne
+
+# compute distribution of domain selectivity values
+working/selectivityCountsdomains.txt: src/computeSelectivity.R $(databaseFile) working/highlyScreenedCids.txt
+	$^ $@ $(cores) domains keepOne
+	
+# plot distribution of target selectivity
+working/targetSelectivitySequenceClusters.pdf: src/targetSelectivity.R working/selectivityCountsIndividual.txt working/selectivityCountskClust.txt working/selectivityCountsdomains.txt  working/drugbank_links.csv
+	$^ $@
+	
+# compute target selectivity on a per-domain basis
+working/targetSelectivityByDomain.tab: src/targetSelectivityByDomain.R $(databaseFile) working/highlyScreenedCids.txt working/drugbank_links.csv
+	$^ $@ $(cores) keepOne
+
+# compute heavy atom (non hydrogen) count
+working/heavycount.txt: src/computeMoleculeSize.R working/bioassayCompounds
+	$^ $@ $(cores)
+
+# plot heavy atom count distribution vs selectivity
+working/plotSelectivityBySize.pdf: src/plotSelectivityBySize.R working/selectivityCountskClust.txt working/drugbank_links.csv working/heavycount.txt
+	$^ $@
+
+# Fit functions to target selectivity function
+# plot distribution of target selectivity
+working/selectivityFit.pdf: src/stretchedExponential.R working/drugbank_links.csv
+	$^ $@
+
+# compute MF GO slim for each domain
+working/domainGOslimAnnotations.csv: src/pfamGOslimAnnotations.R working/pfam2go working/goslim_generic.obo
+	$^ $@
+
+# make latex table of target selectivity on a per-domain basis
+working/targetSelectivityByDomainFreq.tex: src/targetSelectivityByDomainTable.R working/targetSelectivityByDomain.tab working/Pfam-A.clans.tsv $(databaseFile) working/domainGOslimAnnotations.csv working/humanDomainsTwoCols working/targetGOslimAnnotations.csv working/PfamResidueLengths.tab
+	$^ $@

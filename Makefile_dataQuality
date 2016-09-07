@@ -1,0 +1,24 @@
+################################################################################
+# (C) 2016 Tyler W. H. Backman
+# Tables and figures for Bioactivity Data Curation and Overview
+# and Data Quality and Reproducibility sections
+################################################################################
+
+# Tabulate the distribution of number of times screened for each compound in the
+# database? Drugs vs non-drugs.
+# also generates: working/timesScreened.pdf working/timesScreened.RData
+working/timesScreened.csv: src/timesScreened.R $(databaseFile) working/drugbank_links.csv
+	$^ $@
+	
+# build sparse matrix of compounds vs targets where counts represent
+# number of times each pair was replicated
+working/replicateMatrix.RData: src/replicateMatrix.R $(databaseFile) 
+	$^ $@ $(cores)
+
+# build table of replicate count distribution
+working/replicateTable.csv: src/replicateTable.R working/replicateMatrix.RData
+	$^ $@
+
+# extract replicates and investigate one at a time- and output counts
+working/replicateStats.RData: src/replicateStats.R working/replicateMatrix.RData $(databaseFile) 
+	$^ $@ $(cores)
