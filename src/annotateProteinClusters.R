@@ -1,12 +1,13 @@
 #!/usr/bin/env Rscript
 
 # (C) 2015 Tyler William H Backman
-# Purpose: annotate kclust clusters via biomaRt
+# Purpose: annotate kclust clusters via uniprot
 #   choose a representative protein target for each cluster with the following priority order:
 #   (1) already annotated in DrugBank, (2) human, (3) non-human
 
 library(R.utils)
-library(biomaRt)
+# library(biomaRt)
+source("src/uniprotInterface.R") # replacement for biomaRt
 library(bioassayR)
 
 # parse input options
@@ -27,8 +28,8 @@ database <- connectBioassayDB(databaseFile)
 
 # for each protein target cluster choose a representative UniProt ID and extract details
 uniqueClusterIds <- unique(curatedClusters[,2])
-unimart <- useMart("unimart")
-uniprot <- useDataset("uniprot", mart=unimart)
+# unimart <- useMart("unimart")
+# uniprot <- useDataset("uniprot", mart=unimart)
 uniProtData <- sapply(uniqueClusterIds, function(x){
     allTargetIds <- as.character(curatedClusters[curatedClusters[,2] %in% as.character(x),1])
 
@@ -45,13 +46,14 @@ uniProtData <- sapply(uniqueClusterIds, function(x){
         uniProtGITargets <- c()
     completeTargetList <- unique(c(uniProtTargets, uniProtGITargets))
 
-    # look up uniprot IDs in biomaRt
-    proteinDetails <- getBM(attributes=c("accession", "gene_name", "organism", "protein_name"), filters=c("accession"), mart=uniprot, values=completeTargetList)
-
+    # look up uniprot IDs 
+    # proteinDetails <- getBM(attributes=c("accession", "gene_name", "organism", "protein_name"), filters=c("accession"), mart=uniprot, values=completeTargetList)
+    proteinDetails <- UniProtAnnotator(completeTargetList, useBiomartNames=T)
+    
     # choose a representative ID: DrugBank annotated first, then human, otherwise whatever is left
     # if nothing, just return the first identifier from the raw clustering file
     annotatedDetails <- proteinDetails[proteinDetails$accession %in% uniProtTargets,]
-    humanDetails <- proteinDetails[proteinDetails$organism %in% "Homo sapiens",]
+    humanDetails <- proteinDetails[grepl("Homo sapiens", proteinDetails$organism),]
     if(nrow(annotatedDetails) != 0)
         return(annotatedDetails[1,]) # first annotated name
     else if(nrow(humanDetails) != 0)

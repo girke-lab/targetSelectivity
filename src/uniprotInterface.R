@@ -19,7 +19,7 @@ library(RCurl)
     return(t(data.frame(cbind(header, values), row.names=1)))
 }
 
-UniProtAnnotator <- function(accessions){
+UniProtAnnotator <- function(accessions, useBiomartNames=FALSE){
     results <- lapply(accessions, .UniProtDownload)
     if(sum(is.na(results)) > 0){
         warning(
@@ -31,5 +31,14 @@ UniProtAnnotator <- function(accessions){
         )
         results <- results[! is.na(results)]
     }
-    return(do.call(rbind, results))
+    results <- do.call(rbind, results)
+    results <- as.data.frame(results, row.names=F, stringsAsFactors = F)
+    if(useBiomartNames){
+        # "accession", "gene_name", "organism", "protein_name"
+        colnames(results)[colnames(results) == "Entry"] <- "accession"
+        colnames(results)[colnames(results) == "Gene names"] <- "gene_name"
+        colnames(results)[colnames(results) == "Organism"] <- "organism"
+        colnames(results)[colnames(results) == "Protein names"] <- "protein_name"
+    }
+    return(results)
 }
