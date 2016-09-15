@@ -31,6 +31,7 @@ uniqueClusterIds <- unique(curatedClusters[,2])
 # unimart <- useMart("unimart")
 # uniprot <- useDataset("uniprot", mart=unimart)
 uniProtData <- sapply(uniqueClusterIds, function(x){
+    print(paste("processing cluster", x))
     allTargetIds <- as.character(curatedClusters[curatedClusters[,2] %in% as.character(x),1])
 
     # find genbank and uniprot ids
@@ -45,6 +46,9 @@ uniProtData <- sapply(uniqueClusterIds, function(x){
     } else 
         uniProtGITargets <- c()
     completeTargetList <- unique(c(uniProtTargets, uniProtGITargets))
+
+    if(is.na(completeTargetList))
+        return(t(data.frame(c(NA, NA, NA, allTargetIds[1]), row.names=c("accession", "gene_name", "organism", "protein_name"))))
 
     # look up uniprot IDs 
     # proteinDetails <- getBM(attributes=c("accession", "gene_name", "organism", "protein_name"), filters=c("accession"), mart=uniprot, values=completeTargetList)
