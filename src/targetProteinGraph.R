@@ -50,11 +50,12 @@ registerDoMC(cores=cores)
 distanceMat <- foreach(col=1:ncol(compoundVsTargetMatrix), .combine='rbind') %dopar% {
     trinarySimilarity(compoundVsTargetMatrix[,col,drop=F], compoundVsTargetMatrix)
 }
-row.names(distanceMat) <- colnames(distanceMat)
 
 # save computation results
 save(list = c("distanceMat"), file = gsub("^(.*).gml$", "\\1.RData", outputFilename))
 # load(gsub("^(.*).gml$", "\\1.RData", outputFilename))
+
+row.names(distanceMat) <- colnames(distanceMat)
 
 # inject 0s at NAs
 distanceMat[is.na(distanceMat)] <- 0
