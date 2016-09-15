@@ -12,7 +12,6 @@ This analysis pipeline is designed to run in parallel on a CentOS linux system. 
 ## Use
 * Export (with the Bash shell) a viable ramdisk location for the database as shown in sample_make.sh
 * Export (with the Bash shell) the number of cpu cores (64 or more recommended) as shown in sample_make.sh
-* Export (with the Bash shell) a username and password for DrugBank (http://www.drugbank.ca) as shown in sample_make.sh
 * Install any needed R packages or other software
 * Run 'make -e working/<filename>' to create any desired output file described in the makefiles
 
