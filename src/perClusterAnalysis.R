@@ -51,7 +51,7 @@ curatedClusters <- read.table(curatedClustersFile)
 clusterAnnotations <- read.csv(clusterAnnotationFile)
 drugLinks <- read.csv(drugLinksFile) 
 hclustResult <- read.table(hclustResultFile)
-domains <- read.table(targetHmmFile, header = FALSE, skip = 3)
+domains <- read.table(targetHmmFile, header = FALSE)
 PfamClans <- read.delim(PfamClansInputFile, header=FALSE, na.strings="\\N")
 # load(fullActivityMatrix) # loads matrix as "results"
 # load(bioactivityNearestNeighborsFile) # loads matrix as "nnm"
