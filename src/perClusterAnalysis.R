@@ -199,16 +199,16 @@ biggestClusterTotalSize <- table(hclustResult[,2])[biggestClusterName]
 # INVESTIGATE TARGETS
 ################################
 
-# find top GO terms among targets
-unimart <- useMart("unimart")
-uniprot <- useDataset("uniprot", mart=unimart)
-uniProtAccessions <- unique(uniProtData$accession)
-uniprotGO <- getBM(attributes=c("accession", "go_id", "go_name"), filters=c("accession"), mart=uniprot, values=uniProtAccessions)
-topGO <- table(uniprotGO$go_name)
-topGO <- topGO[order(topGO, decreasing=TRUE)]
-uniprotKeywords <- getBM(attributes=c("accession", "keyword"), filters=c("accession"), mart=uniprot, values=uniProtAccessions)
-topKeywords <- table(uniprotKeywords$keyword)
-topKeywords <- topKeywords[order(topKeywords, decreasing=TRUE)]
+# # find top GO terms among targets
+# unimart <- useMart("unimart")
+# uniprot <- useDataset("uniprot", mart=unimart)
+# uniProtAccessions <- unique(uniProtData$accession)
+# uniprotGO <- getBM(attributes=c("accession", "go_id", "go_name"), filters=c("accession"), mart=uniprot, values=uniProtAccessions)
+# topGO <- table(uniprotGO$go_name)
+# topGO <- topGO[order(topGO, decreasing=TRUE)]
+# uniprotKeywords <- getBM(attributes=c("accession", "keyword"), filters=c("accession"), mart=uniprot, values=uniProtAccessions)
+# topKeywords <- table(uniprotKeywords$keyword)
+# topKeywords <- topKeywords[order(topKeywords, decreasing=TRUE)]
 
 # find top Pfam domains among targets
 domainsPerCluster <- unlist(lapply(targetIds, function(x){
