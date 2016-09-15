@@ -15,8 +15,9 @@ library(biclust)
 cidsVStargetFile <- commandArgs(trailingOnly=TRUE)[1]
 promiscuityProbabilityFile <- commandArgs(trailingOnly=TRUE)[2]
 databaseFile <- commandArgs(trailingOnly=TRUE)[3]
-outputFilename <- commandArgs(trailingOnly=TRUE)[4]
-cores <- commandArgs(trailingOnly=TRUE)[5]
+goannotationsFile <- commandArgs(trailingOnly=TRUE)[4]
+outputFilename <- commandArgs(trailingOnly=TRUE)[5]
+cores <- commandArgs(trailingOnly=TRUE)[6]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){

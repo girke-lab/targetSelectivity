@@ -4,5 +4,5 @@
 ################################################################################
 
 # create graph gml object
-working/tpnet.gml: src/targetProteinGraph.R working/cidsVStargets.RData working/promiscuityProbability.tab $(databaseFile)
+working/tpnet.gml: src/targetProteinGraph.R working/cidsVStargets.RData working/promiscuityProbability.tab $(databaseFile) working/targetGOslimAnnotations.csv
 	$^ $@ $(cores)
