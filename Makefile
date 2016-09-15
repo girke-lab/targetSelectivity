@@ -8,8 +8,8 @@ cores = 1
 databaseFile = working/bioassayDatabase.sqlite
 # databaseFile = /dev/shm/bioassayDatabase.sqlite # uncomment for linux ramdisk
 dataUrl = https://biocluster.ucr.edu/~tbackman
-drugBankUsername = putDrugBankEmailHere
-drugBankPassword = putDrugBankPasswordHere
+# drugBankUsername = putDrugBankEmailHere
+# drugBankPassword = putDrugBankPasswordHere
 
 ##########################################
 # download external dependencies 
@@ -41,28 +41,32 @@ working/bioassayCompounds:
 
 # get structures of FDA approved drugs
 working/drugbank.sdf:
-	curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/approved-structures
-	unzip $@.zip -d working/
-	mv working/structures.sdf $@
+	# curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/approved-structures
+	# unzip $@.zip -d working/
+	# mv working/structures.sdf $@
+	wget $(dataUrl)/drugbank4.2/drugbank.sdf -O $@ --no-check-certificate
 
 # download drugbank target sequences
 working/drugbank_targets.fasta:
-	mkdir -p working
-	curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/target-approved-polypeptide-sequences
-	unzip $@.zip -d working/
-	mv working/protein.fasta $@
+	# mkdir -p working
+	# curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/target-approved-polypeptide-sequences
+	# unzip $@.zip -d working/
+	# mv working/protein.fasta $@
+	wget $(dataUrl)/drugbank4.2/drugbank_targets.fasta -O $@ --no-check-certificate
 
 # download DrugBank FDA Approved External Drug Links
 working/drugbank_links.csv:
-	curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/approved-drug-links
-	unzip $@.zip -d working/
-	mv working/drug\ links.csv $@
+	# curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/approved-drug-links
+	# unzip $@.zip -d working/
+	# mv working/drug\ links.csv $@
+	wget $(dataUrl)/drugbank4.2/drugbank_links.csv -O $@ --no-check-certificate
 
 # download annotated drugbank targets from DrugBank
 working/drug_target_uniprot_links.csv:
-	curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/target-approved-uniprot-links
-	unzip $@.zip -d working/
-	mv working/uniprot\ links.csv $@
+	# curl -L -o $@.zip -u $(drugBankUsername):$(drugBankPassword) http://www.drugbank.ca/releases/5-0-1/downloads/target-approved-uniprot-links
+	# unzip $@.zip -d working/
+	# mv working/uniprot\ links.csv $@
+	wget $(dataUrl)/drugbank4.2/drug_target_uniprot_links.csv -O $@ --no-check-certificate
 
 # download Pfam-A HMMs in an HMM library searchable with the hmmscan program 
 working/Pfam-A.hmm:
