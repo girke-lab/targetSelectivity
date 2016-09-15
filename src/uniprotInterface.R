@@ -6,11 +6,11 @@ library(RCurl)
 .uniprotserverURL <- "http://www.uniprot.org/uniprot/"
 
 .UniProtDownload <- function(accession){
-    response <- postForm(paste(.uniprotserverURL,
+    response <- getURL(paste(.uniprotserverURL,
                                "?query=accession%3A",
                                accession,
                                "&format=tab"
-                               ,sep=""), category="all")[[1]]
+                               ,sep=""))[[1]]
     if(response == "")
         return(NA)
     lines <- strsplit(response, "\n")[[1]]
