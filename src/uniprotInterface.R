@@ -3,24 +3,27 @@
 # Use: UniProtAnnotator(UniProtIDList)
 
 library(RCurl)
+library(utils)
 .uniprotserverURL <- "http://www.uniprot.org/uniprot/"
 
-.UniProtDownload <- function(accession){
+.UniProtDownload <- function(accession, columns){
+    columns <- URLencode(paste(columns, collapse=","))
     response <- getURL(paste(.uniprotserverURL,
                                "?query=accession%3A",
                                accession,
-                               "&format=tab"
-                               ,sep=""))[[1]]
+                               "&columns=",
+                               columns,
+                               "&format=tab",
+                               sep=""))[[1]]
     if(response == "")
         return(NA)
-    lines <- strsplit(response, "\n")[[1]]
-    header <- strsplit(lines[1], "\t")[[1]]
-    values <- strsplit(lines[2], "\t")[[1]]
-    return(t(data.frame(cbind(header, values), row.names=1)))
+    responsetable <- read.delim(text=response, stringsAsFactors=F, check.names=FALSE)
+    responsetable <- cbind(accession=accession, responsetable, stringsAsFactors=FALSE)
+    return(responsetable)
 }
 
-UniProtAnnotator <- function(accessions, useBiomartNames=FALSE){
-    results <- lapply(accessions, .UniProtDownload)
+UniProtAnnotator <- function(accessions, useBiomartNames=FALSE, columns=c("genes", "organism", "protein names")){
+    results <- lapply(accessions, .UniProtDownload, columns=columns)
     if(sum(is.na(results)) > 0){
         warning(
             paste(
@@ -32,7 +35,6 @@ UniProtAnnotator <- function(accessions, useBiomartNames=FALSE){
         results <- results[! is.na(results)]
     }
     results <- do.call(rbind, results)
-    results <- as.data.frame(results, row.names=F, stringsAsFactors = F)
     if(useBiomartNames){
         # "accession", "gene_name", "organism", "protein_name"
         colnames(results)[colnames(results) == "Entry"] <- "accession"
