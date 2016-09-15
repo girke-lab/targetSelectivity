@@ -78,7 +78,7 @@ largeClusters <- (1:nrow(clusterStats))[clusterStats[,1] > 1]
 ##################################
 gc()
 registerDoMC(cores=cores)
-foreach(selectedCluster = largeClusters, .export=ls(envir=globalenv()), .packages=c("ggplot2", "reshape", "ChemmineR", "biomaRt", "Matrix")) %dopar% {
+foreach(selectedCluster = largeClusters, .export=ls(envir=globalenv()), .packages=c("ggplot2", "reshape", "ChemmineR", "Matrix")) %dopar% {
 # for(selectedCluster in largeClusters){
 print(paste("processing bicluster", selectedCluster))
 drugIds <- clusterResults[[selectedCluster]]$rows

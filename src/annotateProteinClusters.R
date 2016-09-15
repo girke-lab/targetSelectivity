@@ -65,7 +65,7 @@ uniProtData <- sapply(uniqueClusterIds, function(x){
 })
 uniProtData <- t(as.data.frame(matrix(unlist(uniProtData), ncol=ncol(uniProtData)), row.names=row.names(uniProtData)))
 if(nrow(uniProtData) != length(uniqueClusterIds))
-    stop("ERROR: invalid length of biomaRt returned result")
+    stop("ERROR: invalid length of uniprot returned result")
 clusterAnnotations <- cbind(uniqueClusterIds, uniProtData)
 
 write.csv(clusterAnnotations, outputFile, row.names=FALSE)
