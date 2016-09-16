@@ -8,6 +8,10 @@
 working/drugComparisonMatrix.RData: src/comparisonMatrix.R $(databaseFile) working/highlyScreenedCids.txt working/curatedClusters.txt working/drug_target_uniprot_links.csv working/drugbank_links.csv
 	$^ $@
 
+# quantify results in drugComparisonMatrix
+working/drugComparisonTable.tex: src/drugComparisonTable.R working/drugComparisonMatrix.RData working/clusterAnnotations.csv
+	$^ $@
+
 # perform biclustering to identify target/drug groups
 working/biClusters.RData: src/biclusterMatrix.R working/drugComparisonMatrix.RData src/bicbin.R
 	$^ $@ $(cores)

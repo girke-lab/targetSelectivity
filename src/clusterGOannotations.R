@@ -15,7 +15,6 @@ outputFile <- commandArgs(trailingOnly=TRUE)[2]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
-    setwd("../")
     clusterAnnotationsFile <- "working/clusterAnnotations.csv"
     outputFile <- "working/clusterGOannotations.csv"
 }
@@ -32,6 +31,7 @@ inputTargets <- as.character(unique(inputTargets$accession[! is.na(inputTargets$
 GOannotations <- UniProtAnnotator(inputTargets, columns=c("genes", "organism", "protein names", "go(molecular function)"))
 
 extractTerms <- function(x){
+    print(paste("getting terms for UniProt ID:", x[["accession"]], collapse=" "))
     GOresult <- x[["Gene ontology (molecular function)"]]
     splitTerms <- strsplit(GOresult, split=";\\W")[[1]]
     go_id <- gsub("^.*\\[(.*)\\]$", "\\1", splitTerms)
