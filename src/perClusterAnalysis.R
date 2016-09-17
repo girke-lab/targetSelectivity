@@ -103,6 +103,7 @@ sortedCompounds <- clusterSort(binaryMatrix)
 
 # use representative protein names for targets
 uniProtData <- clusterAnnotations[match(targetIds, clusterAnnotations$uniqueClusterIds),]
+uniProtData$protein_name <- gsub("^(.*?)\\s\\(.*$", "\\1", uniProtData$protein_name)
 uniProtData$protein_name <- gsub("^(.{60}).*$", "\\1...", uniProtData$protein_name)
 uniProtData$protein_name <- make.unique(uniProtData$protein_name)
 colnames(subMatrix) <- unlist(uniProtData$protein_name) 
@@ -123,7 +124,7 @@ labels <- c("untested", "inactive", "active", "untested annotated", "inactive an
 drugComparisons$activity <- factor(labels[drugComparisons$activity + 1], levels=labels)
 # png(filename = plotFileName, width=1024, height=768)
 # pdf(file=plotFileName, width=7, height=10)
-keyColors <- c("black", "grey", "00441b", "41ab5d", "blue", "c6e9c0")
+keyColors <- c("black", "#4d4d4d", "#00441b", "#41ab5d", "#3a5fcd", "#c6e9c0")
 keyColors <- keyColors[as.numeric(row.names(table(subMatrix)))+1]
 p <- ggplot(drugComparisons, aes(clusters, drugs)) 
 p <- p + geom_tile(aes(fill=activity)) + 
