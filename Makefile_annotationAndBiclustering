@@ -34,7 +34,7 @@ working/biclusterMDS.pdf: src/biclusterMDS.R working/biClusters.RData working/dr
 	$^ $@	
 
 # make heatmap of GO terms vs biclusters
-working/biclusterGoScatter.pdf: src/biclusterGoScatter.R working/perClusterAnalysis working/clusterGOannotations.csv working/clusterAnnotations.csv working/drugComparisonMatrix.RData
+working/biclusterGoScatter.pdf: src/biclusterGoScatter.R working/perClusterAnalysis working/clusterGOslimAnnotations.csv working/clusterAnnotations.csv working/drugComparisonMatrix.RData
 	$^ $@
 
 # make graph object of drug target matrix
