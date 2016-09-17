@@ -123,7 +123,7 @@ labels <- c("untested", "inactive", "active", "untested annotated", "inactive an
 drugComparisons$activity <- factor(labels[drugComparisons$activity + 1], levels=labels)
 # png(filename = plotFileName, width=1024, height=768)
 # pdf(file=plotFileName, width=7, height=10)
-keyColors <- c("black", "grey", "red", "orange", "blue", "green")
+keyColors <- c("black", "grey", "00441b", "41ab5d", "blue", "c6e9c0")
 keyColors <- keyColors[as.numeric(row.names(table(subMatrix)))+1]
 p <- ggplot(drugComparisons, aes(clusters, drugs)) 
 p <- p + geom_tile(aes(fill=activity)) + 
@@ -137,7 +137,7 @@ p <- p + geom_tile(aes(fill=activity)) +
     labs(
         x="Targets", 
         y="Drugs", 
-        title="Drug Target Annotations and Bioactivity", 
+        # title="Drug Target Annotations and Bioactivity", 
         fill="Activity Type")
 print(p)
 imageWidth <- 3.71 + length(targetIds)*0.235
