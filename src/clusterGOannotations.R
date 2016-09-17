@@ -29,9 +29,10 @@ inputTargets <- as.character(unique(inputTargets$accession[! is.na(inputTargets$
 # GOannotations <- getBM(attributes=c("accession", "go_id", "go_name"), filters=c("accession"), mart=uniprot,values=inputTargets)
 
 GOannotations <- UniProtAnnotator(inputTargets, columns=c("genes", "organism", "protein names", "go(molecular function)"))
+save(list = c("GOannotations"), file = "working/clusterGOannotations.RData")
+GOannotations <- GOannotations[! is.na(GOannotations[,"Gene ontology (molecular function)"]),]
 
 extractTerms <- function(x){
-    print(paste("getting terms for UniProt ID:", x[["accession"]], collapse=" "))
     GOresult <- x[["Gene ontology (molecular function)"]]
     splitTerms <- strsplit(GOresult, split=";\\W")[[1]]
     go_id <- gsub("^.*\\[(.*)\\]$", "\\1", splitTerms)
@@ -40,7 +41,9 @@ extractTerms <- function(x){
 }
 
 results <- apply(GOannotations, MARGIN=1, FUN=extractTerms)
+results <- results[sapply(results, ncol) == 3]
 results <- do.call("rbind", results)
 results$go_name <- paste("F:", results$go_name, sep="")
+results <- results[! duplicated(paste(results$accession, results$go_id, sep="______")), ]
 
 write.csv(results, outputFile, row.names=FALSE)
