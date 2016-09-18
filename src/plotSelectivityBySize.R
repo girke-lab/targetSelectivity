@@ -16,16 +16,17 @@ drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[2]
 compoundSizeFile <- commandArgs(trailingOnly=TRUE)[3]
 highlyScreened <- commandArgs(trailingOnly=TRUE)[4]
 activeCidsFile <- commandArgs(trailingOnly=TRUE)[5]
-outputFile <- commandArgs(trailingOnly=TRUE)[6]
+databaseFile <- commandArgs(trailingOnly=TRUE)[6]
+outputFile <- commandArgs(trailingOnly=TRUE)[7]
 
 # test code for running without make:
 if(is.null(commandArgs(trailingOnly=TRUE)[1])){
-    databaseFile <- "~/Downloads/pubchem_protein_only.sqlite"
     selectivityCountsFile <- "working/selectivityCountskClust.txt"
     drugbank_linksFile <- "working/drugbank_links.csv"
     compoundSizeFile <- "working/heavycount.txt"
     highlyScreened <- "working/highlyScreenedCids.txt"
     activeCidsFile <- "working/activeCids.txt"
+    databaseFile <- "~/Downloads/pubchem_protein_only.sqlite"
     outputFile <- "working/plotSelectivityBySize.pdf"
 }
 
