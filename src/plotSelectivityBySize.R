@@ -11,7 +11,7 @@ library(bioassayR)
 library(xtable)
 
 # parse input options
-selectivityCountskClustFile <- commandArgs(trailingOnly=TRUE)[1]
+selectivityCountsFile <- commandArgs(trailingOnly=TRUE)[1]
 drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[2]
 compoundSizeFile <- commandArgs(trailingOnly=TRUE)[3]
 highlyScreened <- commandArgs(trailingOnly=TRUE)[4]

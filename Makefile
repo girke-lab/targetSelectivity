@@ -33,7 +33,7 @@ working/bioassayCompounds.sdf:
 
 # download SDF files of all active bioassayR compounds
 working/bioassayCompounds:
-	mkdir -p $@
+	mkdir -p working 
 	wget $(dataUrl)/bioassayR/activeCompoundsSplit.tgz -O $@.tgz --no-check-certificate
 	cd working && tar xfz bioassayCompounds.tgz
 	mv working/splitFolder $@
