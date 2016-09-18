@@ -17,7 +17,7 @@ library(BicBin)
 # parse input options
 inputMatrixFile <- commandArgs(trailingOnly=TRUE)[1]
 outputFile <- commandArgs(trailingOnly=TRUE)[2]
-cores <- commandArgs(trailingOnly=TRUE)[3] 
+cores <- as.numeric(commandArgs(trailingOnly=TRUE)[3]) 
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
