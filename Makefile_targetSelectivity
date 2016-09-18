@@ -45,7 +45,7 @@ working/heavycount.txt: src/computeMoleculeSize.R working/bioassayCompounds
 	$^ $@ $(cores)
 
 # plot heavy atom count distribution vs selectivity
-working/plotSelectivityBySize.pdf: src/plotSelectivityBySize.R working/selectivityCountskClust.txt working/drugbank_links.csv working/heavycount.txt
+working/plotSelectivityBySize.pdf: src/plotSelectivityBySize.R working/selectivityCountskClust.txt working/drugbank_links.csv working/heavycount.txt working/highlyScreenedCids.txt working/activeCids.txt
 	$^ $@
 
 # Fit functions to target selectivity function

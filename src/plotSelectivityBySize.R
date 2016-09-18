@@ -1,4 +1,4 @@
-#e!/usr/bin/env Rscript
+#!/usr/bin/env Rscript
 
 # (C) 2016 Tyler William H Backman
 # Purpose: 
@@ -11,10 +11,12 @@ library(bioassayR)
 library(xtable)
 
 # parse input options
-# selectivityCountskClustFile <- commandArgs(trailingOnly=TRUE)[1]
-# drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[2]
-# compoundSizeFile <- commandArgs(trailingOnly=TRUE)[3]
-# outputFile <- commandArgs(trailingOnly=TRUE)[4]
+selectivityCountskClustFile <- commandArgs(trailingOnly=TRUE)[1]
+drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[2]
+compoundSizeFile <- commandArgs(trailingOnly=TRUE)[3]
+highlyScreened <- commandArgs(trailingOnly=TRUE)[4]
+activeCidsFile <- commandArgs(trailingOnly=TRUE)[5]
+outputFile <- commandArgs(trailingOnly=TRUE)[6]
 
 # test code for running without make:
 if(is.null(commandArgs(trailingOnly=TRUE)[1])){
