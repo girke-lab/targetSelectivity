@@ -53,3 +53,12 @@ humanComparisonTable <- xtable(annotationFrequencies, caption="Frequency of bioa
 
 print(comparisonTable, type="latex", file=outputFile, include.rownames=F)
 print(humanComparisonTable, type="latex", file=outputFile, include.rownames=F, append=T)
+
+# count number of annotated target columns
+sum(colSums(1*(drugComparisonMatrix > 2)) > 0)
+sum(colSums(1*(humanOnlyMatrix > 2)) > 0)
+
+# count number of columns with actives but no annotated targets
+sum((1*colSums(1*(drugComparisonMatrix == 2)) > 0) * (1*colSums(1*(drugComparisonMatrix > 2)) == 0))
+sum((1*colSums(1*(humanOnlyMatrix == 2)) > 0) * (1*colSums(1*(humanOnlyMatrix > 2)) == 0))
+
