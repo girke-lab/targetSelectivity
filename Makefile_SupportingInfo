@@ -20,7 +20,7 @@ working/supportingInfo_domains.tab: src/supportingInfo_domains.R working/targetS
     $^ $@
 
 # Purpose: produce bicluster lists for supplement
-working/supportingInfo_biclusterCids.xls: src/supportingInfo_biclusters.R working/biClusters.RData working/clusterAnnotations.csv working/supportingInfo_biclusterCids.xls
+working/supportingInfo_biclusterCids.xls: src/supportingInfo_biclusters.R working/biClusters.RData working/clusterAnnotations.csv 
 	$^ $@ working/supportingInfo_biclusterTargets.xls
 
 # Purpose: produce list of novel drug-target pairs

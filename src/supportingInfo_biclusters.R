@@ -5,11 +5,13 @@
 
 library(R.utils)
 library(foreach)
+library(Matrix)
 
 # parse input options
-inputMatrixFile <- commandArgs(trailingOnly=TRUE)[1]
+biClustersFile <- commandArgs(trailingOnly=TRUE)[1]
 clusterAnnotationFile <- commandArgs(trailingOnly=TRUE)[2]
-outputFilename <- commandArgs(trailingOnly=TRUE)[3]
+outputFilename1 <- commandArgs(trailingOnly=TRUE)[3]
+outputFilename2 <- commandArgs(trailingOnly=TRUE)[4]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
