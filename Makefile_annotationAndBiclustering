@@ -42,5 +42,6 @@ working/drugComparisonGraph.gml: src/biclusterBipartiteGraph.R \
                                  working/drugComparisonMatrix.RData \
                                  working/biClusters.RData \
                                  working/clusterGOslimAnnotations.csv \
-                                 working/clusterAnnotations.csv
-    $^ $@
+                                 working/clusterAnnotations.csv \
+								 working/biclustergoids.RData
+	$^ $@

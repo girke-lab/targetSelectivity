@@ -11,7 +11,10 @@ library(reshape2)
 # parse input options
 drugComparisonMatrixFile <- commandArgs(trailingOnly=TRUE)[1]
 biClustersFile <- commandArgs(trailingOnly=TRUE)[2]
-outputFile <- commandArgs(trailingOnly=TRUE)[3]
+clusterGOslimAnnotationsFile <- commandArgs(trailingOnly=TRUE)[3]
+clusterAnnotationsFile <- commandArgs(trailingOnly=TRUE)[4]
+biclustergoidsFile <- commandArgs(trailingOnly=TRUE)[5]
+outputFilename <- commandArgs(trailingOnly=TRUE)[6]
 
 # test code for running without make:
 if(is.null(commandArgs(trailingOnly=TRUE)[1])){
