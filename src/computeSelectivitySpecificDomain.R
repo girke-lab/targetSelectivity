@@ -23,6 +23,7 @@ if(is.na(commandArgs(trailingOnly=TRUE)[1])){
     cores <- 2
     drugbank_linksFile <- "working/drugbank_links.csv"
     compoundsByDomain <- "working/compoundsByDomain.RData"
+    cidsVStargetsFile <- "working/cidsVStargets.RData"
     outputFile <- "working/computeSelectivitySpecificDomain.RData"
 }
 
@@ -38,32 +39,31 @@ load(compoundsByDomain, envir=tmp.env)
 domainCounts <- get("domainCounts", pos=tmp.env)
 rm(tmp.env)
 
-# get list of most highly active domains of FDA approved drugs
-# allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:20]]
+# load previously saved domainCounts without polluting env
+tmp.env <- new.env()
+load(cidsVStargetsFile, envir=tmp.env)
+cidsVStargetsMatrix <- get("results", pos=tmp.env)
+rm(tmp.env)
 
-# get the largest protein families
-allDomains <- row.names(domainCounts)[order(domainCounts$totalTargets, decreasing=TRUE)[1:cores]]
-totalTargets <- domainCounts[order(domainCounts$totalTargets, decreasing=TRUE)[1:cores],"totalTargets", drop=F]
+# get list of all domains with 2+ targets
+totalTargets <- domainCounts[order(domainCounts$totalTargets, decreasing=TRUE),"totalTargets", drop=F]
+multiTargetDomains <- row.names(totalTargets)[totalTargets > 1]
 
 domainStats <- function(queryDomain, db){
-    # get list of assay ids (aids) whose targets have this domain
     allTargetsWithDomain <- translateTargetId(db, queryDomain, category="GI", fromCategory="domains")
-    allAssayTargets <- queryBioassayDB(db, "SELECT aid, target FROM targets WHERE target_type = 'protein'")
-    allAssaysWithDomain <- unique(allAssayTargets$aid[allAssayTargets$target %in% allTargetsWithDomain])
-    if(length(allAssaysWithDomain) == 0)
+    matrixSubset <- cidsVStargetsMatrix[rownames(cidsVStargetsMatrix) %in% allTargetsWithDomain,,drop=F]
+
+    # keep only subset with tested compounds
+    matrixSubset <- matrixSubset[,colSums(matrixSubset) > 0,drop=F]
+    if(ncol(matrixSubset) == 0)
         return(NULL)
-    
-    # create compound vs. target matrix
-    assays <- getAssays(db, allAssaysWithDomain)
-    targetMatrix <- perTargetMatrix(assays)
 
     # keep only highly screened active compounds
-    targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 9,drop=F]
-    # targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 2,drop=F]
+    targetMatrixHs <- matrixSubset[,colSums(matrixSubset > 0) > 9,drop=F]
     if(ncol(targetMatrixHs) == 0)
         return(NULL)
     targetMatrixActives <- targetMatrixHs[,colSums(targetMatrixHs == 2) > 0,drop=F]
-    if(ncol(targetMatrixActives) == 1)
+    if(ncol(targetMatrixActives) == 0)
         return(NULL)
 
     if(sum(colnames(targetMatrixActives) %in% drugCids) == 0)
@@ -76,9 +76,19 @@ domainStats <- function(queryDomain, db){
     drugScreeningFrequency <- screeningFrequency[names(screeningFrequency) %in% drugCids]
     nonDrugScreeningFrequency <- screeningFrequency[! names(screeningFrequency) %in% drugCids]
 
+    # iteratively drop most screened FDA approved drugs until the median screening frequency is the same or lower
+    while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
+        # drop most screened drug
+        drugScreeningFrequency <- drugScreeningFrequency[! names(drugScreeningFrequency) %in% names(which.max(drugScreeningFrequency))]
+        # if number of drugs falls below 3, return error
+        if(length(drugScreeningFrequency) < 3)
+            return(NULL)
+    }
+
     # get activity frequency
     activeFrequency <- colSums(1*(targetMatrixActives == 2))
     drugActiveFrequency <- activeFrequency[names(activeFrequency) %in% drugCids]
+    drugActiveFrequency <- drugActiveFrequency[names(drugActiveFrequency) %in% names(drugScreeningFrequency)]
     nonDrugActiveFrequency <- activeFrequency[! names(activeFrequency) %in% drugCids]
     
     mergedValues <- rbind( 
@@ -92,7 +102,7 @@ domainStats <- function(queryDomain, db){
 
 gc()
 registerDoMC(cores=cores)
-results <- foreach(i = allDomains, .combine="rbind", .packages=c("bioassayR")) %dopar% {
+results <- foreach(i = multiTargetDomains, .combine="rbind", .packages=c("bioassayR")) %dopar% {
     print(i)
     tempDBC <- connectBioassayDB(databaseFile)
     result <- domainStats(i, tempDBC)
@@ -103,6 +113,5 @@ results <- foreach(i = allDomains, .combine="rbind", .packages=c("bioassayR")) %
 results <- data.frame(results, stringsAsFactors=FALSE)
 results[,3] <- as.integer(results[,3])
 colnames(results) <- c("domain", "category", "frequency")
-inactiveResults <- results[! results$category %in% c("drugActiveFrequency", "nonDrugActiveFrequency"),]
 
 save(list=c("totalTargets", "results"), file=outputFile)
