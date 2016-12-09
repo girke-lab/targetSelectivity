@@ -39,7 +39,11 @@ domainCounts <- get("domainCounts", pos=tmp.env)
 rm(tmp.env)
 
 # get list of most highly active domains of FDA approved drugs
-allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:20]]
+# allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:20]]
+
+# get the largest protein families
+allDomains <- row.names(domainCounts)[order(domainCounts$totalTargets, decreasing=TRUE)[1:cores]]
+totalTargets <- domainCounts[order(domainCounts$totalTargets, decreasing=TRUE)[1:cores],"totalTargets", drop=F]
 
 domainStats <- function(queryDomain, db){
     # get list of assay ids (aids) whose targets have this domain
@@ -62,6 +66,11 @@ domainStats <- function(queryDomain, db){
     if(ncol(targetMatrixActives) == 1)
         return(NULL)
 
+    if(sum(colnames(targetMatrixActives) %in% drugCids) == 0)
+        return(NULL)
+    if(sum(! colnames(targetMatrixActives) %in% drugCids) == 0)
+        return(NULL)
+
     # get screening frequency
     screeningFrequency <- colSums(1*(targetMatrixActives > 0))
     drugScreeningFrequency <- screeningFrequency[names(screeningFrequency) %in% drugCids]
@@ -72,7 +81,7 @@ domainStats <- function(queryDomain, db){
     drugActiveFrequency <- activeFrequency[names(activeFrequency) %in% drugCids]
     nonDrugActiveFrequency <- activeFrequency[! names(activeFrequency) %in% drugCids]
     
-    mergedValues <- rbind(
+    mergedValues <- rbind( 
           cbind("drugScreeningFrequency", drugScreeningFrequency),
           cbind("nonDrugScreeningFrequency", nonDrugScreeningFrequency),
           cbind("drugActiveFrequency", drugActiveFrequency),
@@ -91,9 +100,9 @@ results <- foreach(i = allDomains, .combine="rbind", .packages=c("bioassayR")) %
     result
 }
 
-results <- data.frame(results)
+results <- data.frame(results, stringsAsFactors=FALSE)
 results[,3] <- as.integer(results[,3])
 colnames(results) <- c("domain", "category", "frequency")
+inactiveResults <- results[! results$category %in% c("drugActiveFrequency", "nonDrugActiveFrequency"),]
 
-computeSelectivitySpecificDomain <- results
-save(list=c("computeSelectivitySpecificDomain"), file=outputFile)
+save(list=c("totalTargets", "results"), file=outputFile)
