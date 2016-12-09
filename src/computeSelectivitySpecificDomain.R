@@ -22,7 +22,7 @@ if(is.na(commandArgs(trailingOnly=TRUE)[1])){
     highlyScreenedCidsFile <- "working/highlyScreenedCids.txt"
     cores <- 2
     drugbank_linksFile <- "working/drugbank_links.csv"
-    compoundsByDomain <- "working/compoundsByDomain_old.RData"
+    compoundsByDomain <- "working/compoundsByDomain.RData"
     outputFile <- "working/computeSelectivitySpecificDomain.RData"
 }
 
@@ -39,9 +39,7 @@ domainCounts <- get("domainCounts", pos=tmp.env)
 rm(tmp.env)
 
 # get list of most highly active domains of FDA approved drugs
-# keep the number equal to the number of cpu cores, so that we finish in
-# one pass
-allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:cores]]
+allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:20]]
 
 domainStats <- function(queryDomain, db){
     # get list of assay ids (aids) whose targets have this domain
