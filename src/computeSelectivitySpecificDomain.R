@@ -11,17 +11,19 @@ library(doMC)
 # parse input options
 databaseFile <- commandArgs(trailingOnly=TRUE)[1]
 highlyScreenedCidsFile <- commandArgs(trailingOnly=TRUE)[2]
-cores <- commandArgs(trailingOnly=TRUE)[3]
-drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[4]
+drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[3]
+outputFile <- commandArgs(trailingOnly=TRUE)[4]
+cores <- commandArgs(trailingOnly=TRUE)[5]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
     # databaseFile <- "/dev/shm/bioassayDatabase.sqlite"
     databaseFile <- "working/bioassayDatabaseSingleTarget.sqlite"
     highlyScreenedCidsFile <- "working/highlyScreenedCids.txt"
-    cores <- 1
+    cores <- 2
     drugbank_linksFile <- "working/drugbank_links.csv"
     compoundsByDomain <- "working/compoundsByDomain_old.RData"
+    outputFile <- "working/computeSelectivitySpecificDomain.RData"
 }
 
 # parse input files
@@ -37,7 +39,9 @@ domainCounts <- get("domainCounts", pos=tmp.env)
 rm(tmp.env)
 
 # get list of most highly active domains of FDA approved drugs
-allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:20]]
+# keep the number equal to the number of cpu cores, so that we finish in
+# one pass
+allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:cores]]
 
 domainStats <- function(queryDomain, db){
     # get list of assay ids (aids) whose targets have this domain
@@ -52,8 +56,8 @@ domainStats <- function(queryDomain, db){
     targetMatrix <- perTargetMatrix(assays)
 
     # keep only highly screened active compounds
-    # targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 9,drop=F]
-    targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 2,drop=F]
+    targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 9,drop=F]
+    # targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 2,drop=F]
     if(ncol(targetMatrixHs) == 0)
         return(NULL)
     targetMatrixActives <- targetMatrixHs[,colSums(targetMatrixHs == 2) > 0,drop=F]
@@ -92,3 +96,6 @@ results <- foreach(i = allDomains, .combine="rbind", .packages=c("bioassayR")) %
 results <- data.frame(results)
 results[,3] <- as.integer(results[,3])
 colnames(results) <- c("domain", "category", "frequency")
+
+computeSelectivitySpecificDomain <- results
+save(list=c("computeSelectivitySpecificDomain"), file=outputFile)
