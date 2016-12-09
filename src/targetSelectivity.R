@@ -49,30 +49,47 @@ median(selectivityCountsDomains[! selectivityCountsDomains[,1] %in% drugCids,2])
 
 # compute mean selectivities for manuscript
 mean(selectivityCountsIndividual[selectivityCountsIndividual[,1] %in% drugCids,2])
+sd(selectivityCountsIndividual[selectivityCountsIndividual[,1] %in% drugCids,2])
 mean(selectivityCountsIndividual[! selectivityCountsIndividual[,1] %in% drugCids,2])
+sd(selectivityCountsIndividual[! selectivityCountsIndividual[,1] %in% drugCids,2])
 
 mean(selectivityCountskClust[selectivityCountskClust[,1] %in% drugCids,2])
+sd(selectivityCountskClust[selectivityCountskClust[,1] %in% drugCids,2])
 mean(selectivityCountskClust[! selectivityCountskClust[,1] %in% drugCids,2])
+sd(selectivityCountskClust[! selectivityCountskClust[,1] %in% drugCids,2])
 
 mean(selectivityCountsDomains[selectivityCountsDomains[,1] %in% drugCids,2])
+sd(selectivityCountsDomains[selectivityCountsDomains[,1] %in% drugCids,2])
 mean(selectivityCountsDomains[! selectivityCountsDomains[,1] %in% drugCids,2])
+sd(selectivityCountsDomains[! selectivityCountsDomains[,1] %in% drugCids,2])
+
 
 # compute trimmed mean selectivities for manuscript
 trimmedCountsI <- selectivityCountsIndividual[selectivityCountsIndividual[,2] < 21,]
 mean(trimmedCountsI[trimmedCountsI[,1] %in% drugCids,2])
+sd(trimmedCountsI[trimmedCountsI[,1] %in% drugCids,2])
 mean(trimmedCountsI[! trimmedCountsI[,1] %in% drugCids,2])
+sd(trimmedCountsI[! trimmedCountsI[,1] %in% drugCids,2])
 
 trimmedCountsK <- selectivityCountskClust[selectivityCountskClust[,2] < 21,]
 mean(trimmedCountsK[trimmedCountsK[,1] %in% drugCids,2])
+sd(trimmedCountsK[trimmedCountsK[,1] %in% drugCids,2])
 mean(trimmedCountsK[! trimmedCountsK[,1] %in% drugCids,2])
+sd(trimmedCountsK[! trimmedCountsK[,1] %in% drugCids,2])
 
 trimmedCountsD <- selectivityCountsDomains[selectivityCountsDomains[,2] < 21,]
 mean(trimmedCountsD[trimmedCountsD[,1] %in% drugCids,2])
+sd(trimmedCountsD[trimmedCountsD[,1] %in% drugCids,2])
 mean(trimmedCountsD[! trimmedCountsD[,1] %in% drugCids,2])
+sd(trimmedCountsD[! trimmedCountsD[,1] %in% drugCids,2])
 
 # ks.test
 ks.test(selectivityCountsIndividual[selectivityCountsIndividual[,1] %in% drugCids,2], selectivityCountsIndividual[! selectivityCountsIndividual[,1] %in% drugCids,2])
 ks.test(selectivityCountsDomains[selectivityCountsDomains[,1] %in% drugCids,2], selectivityCountsDomains[! selectivityCountsDomains[,1] %in% drugCids,2])
+
+wilcox.test(selectivityCountsIndividual[selectivityCountsIndividual[,1] %in% drugCids,2], selectivityCountsIndividual[! selectivityCountsIndividual[,1] %in% drugCids,2], paired=F, alternative="greater")
+wilcox.test(selectivityCountskClust[selectivityCountskClust[,1] %in% drugCids,2], selectivityCountskClust[! selectivityCountskClust[,1] %in% drugCids,2], paired=F, alternative="greater")
+wilcox.test(selectivityCountsDomains[selectivityCountsDomains[,1] %in% drugCids,2], selectivityCountsDomains[! selectivityCountsDomains[,1] %in% drugCids,2], paired=F, alternative="greater")
 
 normalizedCounts <- function(x, max=20, drug=T){
     x <- x[x[,2] > 0,]
@@ -118,35 +135,6 @@ allCounts$counter[allCounts$counter == "Domains"] <- targetCategories[3]
 allCounts$counter <- factor(allCounts$counter, levels=targetCategories)
 allCounts$Compounds <- factor(allCounts$Compounds, levels=labels)
 
-# make dot plot
-p <- ggplot(data=allCounts, aes(x=fraction, y=targets)) +
-    geom_point(aes(color = Compounds), size=4) + 
-    coord_trans(x = "log10") +
-    facet_grid(. ~ counter, scales="fixed") + 
-    guides(colour=guide_legend()) +
-    scale_x_continuous(labels=function(n){format(n, scientific = FALSE)}) + 
-    # xlab("Fraction of Total Compounds") + 
-    xlab("Fraction of Total Compounds (log10)") + 
-    ylab("Active Protein Targets") +
-    # ggtitle("Target Selectivity Distribution") +
-    theme(
-          text = element_text(size=15),
-          panel.grid.major.y = element_line(colour = "grey"),
-          panel.grid.major.x = element_blank(),
-          panel.grid.minor = element_blank(), 
-          panel.background = element_blank(), 
-          axis.line.x = element_line(colour = "black"),
-          axis.line.y = element_line(colour = "black"),
-          legend.position="bottom",
-          legend.key = element_blank()
-    ) + annotation_logticks(scaled=F, sides="b") + 
-    # scale_x_continuous(breaks=c(0, 0.1, 0.2, 0.3)) + 
-    scale_x_continuous(breaks=c(0.01, 0.10, 0.30)) + 
-    scale_colour_brewer(palette="Set1")
-plot(p)
-ggsave(outputFile, plot=p, width=12, height=6)
-
-
 p <- ggplot(data=allCounts, aes(y=fraction, x=targets)) +
     geom_point(aes(color = Compounds), size=4) + 
     coord_trans(y = "log10") +
@@ -158,7 +146,7 @@ p <- ggplot(data=allCounts, aes(y=fraction, x=targets)) +
     xlab("Active Protein Targets") +
     # ggtitle("Target Selectivity Distribution") +
     theme(
-        text = element_text(size=15),
+        text = element_text(size=13),
         panel.grid.major.y = element_line(colour = "grey"),
         panel.grid.major.x = element_blank(),
         panel.grid.minor = element_blank(), 
@@ -172,4 +160,44 @@ p <- ggplot(data=allCounts, aes(y=fraction, x=targets)) +
     scale_y_continuous(breaks=c(0.01, 0.02, 0.10, 0.30)) + 
     scale_colour_brewer(palette="Set1")
 plot(p)
-ggsave("working/targetSelectivityFlipped.pdf", plot=p, width=12, height=6)
+ggsave("working/targetSelectivityFlipped.pdf", plot=p, width=12, height=4)
+
+# make box plot of all counts
+labels <- rep("FDA Approved", nrow(selectivityCountsIndividual))
+labels[! selectivityCountsIndividual[,1] %in% drugCids] <- "non-FDA"
+myDataI <- data.frame(compounds=labels, targets=selectivityCountsIndividual[,2], counter="Target Selectivity")
+
+labels <- rep("FDA Approved", nrow(selectivityCountsIndividual))
+labels[! selectivityCountskClust[,1] %in% drugCids] <- "non-FDA"
+myDataK <- data.frame(compounds=labels, targets=selectivityCountskClust[,2], counter="Cluster Selectivity")
+
+labels <- rep("FDA Approved", nrow(selectivityCountsIndividual))
+labels[! selectivityCountsDomains[,1] %in% drugCids] <- "non-FDA"
+myDataD <- data.frame(compounds=labels, targets=selectivityCountsDomains[,2], counter="Domain Selectivity")
+# boxplot(targets ~ compounds, myData)
+myData <- rbind(myDataI, myDataK, myDataD)
+    
+p <- ggplot(myData, aes(x=factor(compounds), y=targets, fill=compounds)) +
+    geom_boxplot(outlier.shape=NA) + 
+    coord_cartesian(ylim=c(0,16)) +
+    facet_grid(. ~ counter, scales="fixed") +
+    ylab("Active Protein Targets") +
+    # xlab("Compounds") +
+    scale_fill_brewer(palette="Set1") + 
+    theme(
+        text = element_text(size=13),
+        panel.grid.major.y = element_line(colour = "grey"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line.x = element_blank(),
+        axis.line.y = element_line(colour = "black"),
+        axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position="bottom",
+        # legend.title = element_blank(),
+        legend.key = element_blank()
+    )
+plot(p)
+ggsave("working/targetSelectivityDist.pdf", plot=p, width=12, height=4)

@@ -16,37 +16,49 @@ drugbank_linksFile <- commandArgs(trailingOnly=TRUE)[4]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
-    databaseFile <- "/dev/shm/bioassayDatabase.sqlite"
+    # databaseFile <- "/dev/shm/bioassayDatabase.sqlite"
+    databaseFile <- "working/bioassayDatabaseSingleTarget.sqlite"
     highlyScreenedCidsFile <- "working/highlyScreenedCids.txt"
-    cores <- 2
+    cores <- 1
     drugbank_linksFile <- "working/drugbank_links.csv"
+    compoundsByDomain <- "working/compoundsByDomain_old.RData"
 }
 
 # parse input files
+db <- connectBioassayDB(databaseFile)
 cids <- read.table(highlyScreenedCidsFile)[[1]]
 drugbank_links <- read.csv(drugbank_linksFile)
 drugCids <- unique(drugbank_links$PubChem.Compound.ID)
-drugCids <- drugCids[! is.na(drugCids)]
 
-# get list of most highly screened domains of FDA approved drugs
+# load previously saved domainCounts without polluting env
+tmp.env <- new.env()
+load(compoundsByDomain, envir=tmp.env)
+domainCounts <- get("domainCounts", pos=tmp.env)
+rm(tmp.env)
+
+# get list of most highly active domains of FDA approved drugs
+allDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:20]]
 
 domainStats <- function(queryDomain, db){
     # get list of assay ids (aids) whose targets have this domain
     allTargetsWithDomain <- translateTargetId(db, queryDomain, category="GI", fromCategory="domains")
     allAssayTargets <- queryBioassayDB(db, "SELECT aid, target FROM targets WHERE target_type = 'protein'")
     allAssaysWithDomain <- unique(allAssayTargets$aid[allAssayTargets$target %in% allTargetsWithDomain])
-
+    if(length(allAssaysWithDomain) == 0)
+        return(NULL)
+    
     # create compound vs. target matrix
     assays <- getAssays(db, allAssaysWithDomain)
     targetMatrix <- perTargetMatrix(assays)
 
     # keep only highly screened active compounds
-    targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 9]
+    # targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 9,drop=F]
+    targetMatrixHs <- targetMatrix[,colSums(targetMatrix > 0) > 2,drop=F]
     if(ncol(targetMatrixHs) == 0)
-        return(NA)
-    targetMatrixActives <- targetMatrixHs[,colSums(targetMatrixHs == 2) > 0]
+        return(NULL)
+    targetMatrixActives <- targetMatrixHs[,colSums(targetMatrixHs == 2) > 0,drop=F]
     if(ncol(targetMatrixActives) == 1)
-        return(NA)
+        return(NULL)
 
     # get screening frequency
     screeningFrequency <- colSums(1*(targetMatrixActives > 0))
@@ -67,9 +79,6 @@ domainStats <- function(queryDomain, db){
     return(cbind(queryDomain, mergedValues))
 }
 
-# test code
-allDomains <- queryBioassayDB(myDB, "SELECT distinct identifier from targetTranslations where category = 'domains' limit 10")[[1]]
-
 gc()
 registerDoMC(cores=cores)
 results <- foreach(i = allDomains, .combine="rbind", .packages=c("bioassayR")) %dopar% {
@@ -80,3 +89,6 @@ results <- foreach(i = allDomains, .combine="rbind", .packages=c("bioassayR")) %
     result
 }
 
+results <- data.frame(results)
+results[,3] <- as.integer(results[,3])
+colnames(results) <- c("domain", "category", "frequency")
