@@ -3,6 +3,7 @@
 # (C) 2016 Tyler William H Backman
 # Purpose: plot target selectivity against compounds from an individual domain 
 
+library(R.utils)
 library(ggplot2)
 library(cowplot)
 library(xtable)
