@@ -13,8 +13,8 @@ outputFile <- commandArgs(trailingOnly=TRUE)[2]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
-    inputFile <- "working/computeSelectivitySpecificDomain.RData"
-    outputFile <- "working/selectivitySpecificDomains.pdf"
+    inputFile <- "working/computeSelectivitySpecificDomain_noexclusion.RData"
+    outputFile <- "working/selectivitySpecificDomains_noexclusion.pdf"
 }
 
 # parse input files
@@ -45,14 +45,12 @@ results <- results[results$domain %in% unequalMedianDomains,]
 domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% unequalMedianDomains,]
 
 # fix labels
-results$category[results$category == "drugActiveFrequency"] <- "FDA Approved"
-
 activeResults <- results[results$category %in% c("drugActiveFrequency", "nonDrugActiveFrequency"),]
 activeResults$category[activeResults$category == "drugActiveFrequency"] <- "FDA Approved"
 activeResults$category[activeResults$category == "nonDrugActiveFrequency"] <- "Non-FDA"
 p1 <- ggplot(activeResults, aes(x=factor(category), y=frequency, fill=category)) +
     geom_boxplot(outlier.shape=NA) + 
-    coord_cartesian(ylim=c(0,32)) +
+    coord_cartesian(ylim=c(0,35)) +
     facet_grid(. ~ factor(domain, levels=row.names(domainScreeningCounts)), scales="fixed") +
     ylab("Active Protein Targets With Domain") +
     xlab("Pfam Domains") +
@@ -72,7 +70,7 @@ p1 <- ggplot(activeResults, aes(x=factor(category), y=frequency, fill=category))
         # legend.title = element_blank(),
         legend.key = element_blank()
     )
-# plot(p1)
+plot(p1)
 
 inactiveResults <- results[! results$category %in% c("drugActiveFrequency", "nonDrugActiveFrequency"),]
 p2 <- ggplot(inactiveResults, aes(x=factor(category), y=frequency, fill=category)) +
@@ -97,10 +95,10 @@ p2 <- ggplot(inactiveResults, aes(x=factor(category), y=frequency, fill=category
         # legend.title = element_blank(),
         legend.key = element_blank()
     )
-# plot(p2)
+plot(p2)
 
 gridplot <- plot_grid(p1, p2, labels=c("A", "B"), ncol = 1, nrow = 2)
-# plot(gridplot)
+plot(gridplot)
 save_plot(outputFile, gridplot, base_width=12, base_height=9)
 
 xtmp <- xtable(domainScreeningCounts, caption="Selectivity by domain", label="domainScreeningCounts")
