@@ -17,10 +17,10 @@ cores <- commandArgs(trailingOnly=TRUE)[5]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
-    # databaseFile <- "/dev/shm/bioassayDatabase.sqlite"
-    databaseFile <- "working/bioassayDatabaseSingleTarget.sqlite"
+    databaseFile <- "/dev/shm/bioassayDatabase.sqlite"
+    # databaseFile <- "working/bioassayDatabaseSingleTarget.sqlite"
     highlyScreenedCidsFile <- "working/highlyScreenedCids.txt"
-    cores <- 2
+    cores <- 64 
     drugbank_linksFile <- "working/drugbank_links.csv"
     compoundsByDomain <- "working/compoundsByDomain.RData"
     cidsVStargetsFile <- "working/cidsVStargets.RData"
@@ -49,6 +49,9 @@ rm(tmp.env)
 totalTargets <- domainCounts[order(domainCounts$totalTargets, decreasing=TRUE),"totalTargets", drop=F]
 multiTargetDomains <- row.names(totalTargets)[totalTargets > 1]
 
+# optional code: instead get top 35 domains with most active FDA approved drugs
+# multiTargetDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:35]]
+
 domainStats <- function(queryDomain, db){
     allTargetsWithDomain <- translateTargetId(db, queryDomain, category="GI", fromCategory="domains")
     matrixSubset <- cidsVStargetsMatrix[rownames(cidsVStargetsMatrix) %in% allTargetsWithDomain,,drop=F]
@@ -76,13 +79,14 @@ domainStats <- function(queryDomain, db){
     drugScreeningFrequency <- screeningFrequency[names(screeningFrequency) %in% drugCids]
     nonDrugScreeningFrequency <- screeningFrequency[! names(screeningFrequency) %in% drugCids]
 
+    # note: comment this section out to avoid excluding the most highly screened drugs
     # iteratively drop most screened FDA approved drugs until the median screening frequency is the same or lower
-    while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
+     while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
         # drop most screened drug
-        drugScreeningFrequency <- drugScreeningFrequency[! names(drugScreeningFrequency) %in% names(which.max(drugScreeningFrequency))]
+       drugScreeningFrequency <- drugScreeningFrequency[! names(drugScreeningFrequency) %in% names(which.max(drugScreeningFrequency))]
         # if number of drugs falls below 3, return error
-        if(length(drugScreeningFrequency) < 3)
-            return(NULL)
+       if(length(drugScreeningFrequency) < 3)
+           return(NULL)
     }
 
     # get activity frequency
