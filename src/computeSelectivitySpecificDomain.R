@@ -7,6 +7,7 @@ library(R.utils)
 library(bioassayR)
 library(foreach)
 library(doMC)
+library(doRNG)
 
 # parse input options
 databaseFile <- commandArgs(trailingOnly=TRUE)[1]
@@ -81,12 +82,14 @@ domainStats <- function(queryDomain, db){
 
     # note: comment this section out to avoid excluding the most highly screened drugs
     # iteratively drop most screened FDA approved drugs until the median screening frequency is the same or lower
-     while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
-        # drop most screened drug
-       drugScreeningFrequency <- drugScreeningFrequency[! names(drugScreeningFrequency) %in% names(which.max(drugScreeningFrequency))]
-        # if number of drugs falls below 3, return error
-       if(length(drugScreeningFrequency) < 3)
-           return(NULL)
+    while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
+        mostScreenedDrug <- names(which.max(drugScreeningFrequency))
+        activityCol <- targetMatrixActives[,mostScreenedDrug]
+        randomRow <- sample(which(activityCol > 0), 1)
+        targetMatrixActives[randomRow,mostScreenedDrug] <- 0
+
+        screeningFrequency <- colSums(1*(targetMatrixActives > 0))
+        drugScreeningFrequency <- screeningFrequency[names(screeningFrequency) %in% drugCids]
     }
 
     # get activity frequency
@@ -106,7 +109,8 @@ domainStats <- function(queryDomain, db){
 
 gc()
 registerDoMC(cores=cores)
-results <- foreach(i = multiTargetDomains, .combine="rbind", .packages=c("bioassayR")) %dopar% {
+set.seed(123)
+results <- foreach(i = multiTargetDomains, .combine="rbind", .packages=c("bioassayR")) %dorng% {
     print(i)
     tempDBC <- connectBioassayDB(databaseFile)
     result <- domainStats(i, tempDBC)
