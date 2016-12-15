@@ -34,6 +34,21 @@ keepDomains <- row.names(domainScreeningCounts)[(domainScreeningCounts[,1] > 9) 
 domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% keepDomains,]
 results <- results[results$domain %in% keepDomains,]
 
+# save table of number of screened compounds
+xtmp <- xtable(domainScreeningCounts, caption="Selectivity by domain", label="domainScreeningCounts")
+print(xtmp, type="latex", file="working/selectivitySpecificDomains.tex", include.rownames=T)
+
+# find relative distribution of screening frequencies
+splitFreqs <- split(results, results$domain)
+medianScreened <- sapply(splitFreqs, function(x){
+    drugMean <- median(x[x$category == "drugScreeningFrequency",3])
+    nonDrugMean <- median(x[x$category == "nonDrugScreeningFrequency",3])
+    return(c(drugMean, nonDrugMean))
+})
+length(colnames(medianScreened)[medianScreened[1,] > medianScreened[2,]])
+length(colnames(medianScreened)[medianScreened[1,] == medianScreened[2,]])
+length(colnames(medianScreened)[medianScreened[1,] < medianScreened[2,]])
+
 # eliminate those where median is identical
 splitFreqs <- split(results, results$domain)
 medianActives <- sapply(splitFreqs, function(x){
@@ -101,7 +116,3 @@ plot(p2)
 gridplot <- plot_grid(p1, p2, labels=c("A", "B"), ncol = 1, nrow = 2)
 plot(gridplot)
 save_plot(outputFile, gridplot, base_width=12, base_height=9)
-
-xtmp <- xtable(domainScreeningCounts, caption="Selectivity by domain", label="domainScreeningCounts")
-print(xtmp, type="latex", file="working/selectivitySpecificDomains.tex", include.rownames=T)
-
