@@ -10,16 +10,19 @@ library(xtable)
 
 # parse input options
 inputFile <- commandArgs(trailingOnly=TRUE)[1]
-outputFile <- commandArgs(trailingOnly=TRUE)[2]
+domainClustersFile <- commandArgs(trailingOnly=TRUE)[2]
+outputFile <- commandArgs(trailingOnly=TRUE)[3]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
     inputFile <- "working/computeSelectivitySpecificDomain_noexclusion.RData"
+    domainClustersFile <- "working/domainClusters.csv"
     outputFile <- "working/selectivitySpecificDomains_noexclusion.pdf"
 }
 
 # parse input files
 load(inputFile) # loads results
+domainClusters <- read.csv(domainClustersFile)
 
 # make table of number of compounds
 splitFreqs <- split(results$category, results$domain)
@@ -33,6 +36,11 @@ domainScreeningCounts <- domainScreeningCounts[order(domainScreeningCounts[,3], 
 keepDomains <- row.names(domainScreeningCounts)[(domainScreeningCounts[,1] > 9) & (domainScreeningCounts[,2] > 9)]
 domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% keepDomains,]
 results <- results[results$domain %in% keepDomains,]
+
+# keep only representative domains for each shared-target domain cluster
+repDomains <- unique(domainClusters$Cluster)
+domainScreeningCounts <- domainScreeningCounts[rownames(domainScreeningCounts) %in% repDomains,]
+results <- results[results$domain %in% repDomains,]
 
 # save table of number of screened compounds
 xtmp <- xtable(domainScreeningCounts, caption="Selectivity by domain", label="domainScreeningCounts")
@@ -114,5 +122,6 @@ p2 <- ggplot(inactiveResults, aes(x=factor(category), y=frequency, fill=category
 plot(p2)
 
 gridplot <- plot_grid(p1, p2, labels=c("A", "B"), ncol = 1, nrow = 2)
+# gridplot <- plot_grid(p1, p2, p3, p4, labels=c("A", "B", "C", "D"), ncol = 2, nrow = 2)
 plot(gridplot)
 save_plot(outputFile, gridplot, base_width=12, base_height=9)
