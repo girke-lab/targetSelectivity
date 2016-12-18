@@ -22,6 +22,7 @@ if(is.na(commandArgs(trailingOnly=TRUE)[1])){
 
 # parse input files
 load(inputFile) # loads results
+print(length(unique(results$domain)))
 domainClusters <- read.csv(domainClustersFile)
 
 # make table of number of compounds
@@ -39,8 +40,17 @@ results <- results[results$domain %in% keepDomains,]
 
 # keep only representative domains for each shared-target domain cluster
 repDomains <- unique(domainClusters$Cluster)
-domainScreeningCounts <- domainScreeningCounts[rownames(domainScreeningCounts) %in% repDomains,]
+# domainScreeningCounts <- domainScreeningCounts[rownames(domainScreeningCounts) %in% repDomains,]
 results <- results[results$domain %in% repDomains,]
+
+# add clusters to table
+clusters <- as.character(domainClusters$Cluster[match(row.names(domainScreeningCounts), domainClusters$Domain)])
+trans <- 1:length(unique(clusters))
+names(trans) <- unique(clusters)
+cluster <- trans[clusters]
+dnames <- row.names(domainScreeningCounts)
+domainScreeningCounts <- cbind(cluster, domainScreeningCounts)
+row.names(domainScreeningCounts) <- dnames
 
 # save table of number of screened compounds
 xtmp <- xtable(domainScreeningCounts, caption="Selectivity by domain", label="domainScreeningCounts")
@@ -80,7 +90,7 @@ p1 <- ggplot(activeResults, aes(x=factor(category), y=frequency, fill=category))
     xlab("Pfam Domains") +
     scale_fill_brewer(palette="Set1") + 
     theme(
-        text = element_text(size=13),
+        text = element_text(size=12),
         panel.grid.major.y = element_line(colour = "grey"),
         panel.grid.major.x = element_blank(),
         panel.grid.minor = element_blank(), 
@@ -94,7 +104,7 @@ p1 <- ggplot(activeResults, aes(x=factor(category), y=frequency, fill=category))
         # legend.title = element_blank(),
         legend.key = element_blank()
     )
-plot(p1)
+# plot(p1)
 
 inactiveResults <- results[! results$category %in% c("drugActiveFrequency", "nonDrugActiveFrequency"),]
 p2 <- ggplot(inactiveResults, aes(x=factor(category), y=frequency, fill=category)) +
@@ -105,7 +115,7 @@ p2 <- ggplot(inactiveResults, aes(x=factor(category), y=frequency, fill=category
     xlab("Pfam Domains") +
     scale_fill_brewer(palette="Set1") + 
     theme(
-        text = element_text(size=13),
+        text = element_text(size=12),
         panel.grid.major.y = element_line(colour = "grey"),
         panel.grid.major.x = element_blank(),
         panel.grid.minor = element_blank(), 
@@ -119,9 +129,11 @@ p2 <- ggplot(inactiveResults, aes(x=factor(category), y=frequency, fill=category
         # legend.title = element_blank(),
         legend.key = element_blank()
     )
-plot(p2)
+# plot(p2)
 
 gridplot <- plot_grid(p1, p2, labels=c("A", "B"), ncol = 1, nrow = 2)
 # gridplot <- plot_grid(p1, p2, p3, p4, labels=c("A", "B", "C", "D"), ncol = 2, nrow = 2)
-plot(gridplot)
-save_plot(outputFile, gridplot, base_width=12, base_height=9)
+# gridplot <- plot_grid(p1, p3, p2, p4, labels=c("A", "C", "B", "D"), ncol = 2, nrow = 2)
+# plot(gridplot)
+# save_plot(outputFile, gridplot, base_width=12, base_height=9)
+save_plot(outputFile, gridplot, base_width=6, base_height=9)
