@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # (C) 2016 Tyler William H Backman
-# Purpose: plot target selectivity against compounds from an individual domain 
+# Purpose: cluster domains by two different methods
 
 library(R.utils)
 library(bioassayR)
