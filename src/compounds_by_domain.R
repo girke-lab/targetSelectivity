@@ -30,7 +30,8 @@ outputFile <- commandArgs(trailingOnly=TRUE)[8]
 if(is.null(commandArgs(trailingOnly=TRUE)[1])){
     cidsVStargetFile <- "working/cidsVStargets.RData"
     drugbank_linksFile <- "working/drugbank_links.csv"
-    databaseFile <- "~/Downloads/pubchem_protein_only.sqlite"
+    # databaseFile <- "~/Downloads/pubchem_protein_only.sqlite"
+    databaseFile <- "working/bioassayDatabaseSingleTarget.sqlite"
     pfamClansFile <- "working/Pfam-A.clans.tsv"
     humanDomainsTwoCols <- "working/humanDomainsTwoCols"
     PfamResidueLengthsFile <- "working/PfamResidueLengths.tab"
