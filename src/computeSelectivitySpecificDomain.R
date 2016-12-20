@@ -53,7 +53,7 @@ multiTargetDomains <- row.names(totalTargets)[totalTargets > 1]
 # optional code: instead get top 35 domains with most active FDA approved drugs
 # multiTargetDomains <- row.names(domainCounts)[order(domainCounts$drugCidCountActives, decreasing=TRUE)[1:35]]
 
-domainStats <- function(queryDomain, db){
+domainStats <- function(queryDomain, db, equalizeMedians=TRUE){
     allTargetsWithDomain <- translateTargetId(db, queryDomain, category="GI", fromCategory="domains")
     matrixSubset <- cidsVStargetsMatrix[rownames(cidsVStargetsMatrix) %in% allTargetsWithDomain,,drop=F]
 
@@ -82,14 +82,16 @@ domainStats <- function(queryDomain, db){
 
     # note: comment this section out to avoid excluding the most highly screened drugs
     # iteratively drop most screened FDA approved drugs until the median screening frequency is the same or lower
-    while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
-        mostScreenedDrug <- names(which.max(drugScreeningFrequency))
-        activityCol <- targetMatrixActives[,mostScreenedDrug]
-        randomRow <- sample(which(activityCol > 0), 1)
-        targetMatrixActives[randomRow,mostScreenedDrug] <- 0
+    if(equalizeMedians){
+        while(median(drugScreeningFrequency) > median(nonDrugScreeningFrequency)){
+            mostScreenedDrug <- names(which.max(drugScreeningFrequency))
+            activityCol <- targetMatrixActives[,mostScreenedDrug]
+            randomRow <- sample(which(activityCol > 0), 1)
+            targetMatrixActives[randomRow,mostScreenedDrug] <- 0
 
-        screeningFrequency <- colSums(1*(targetMatrixActives > 0))
-        drugScreeningFrequency <- screeningFrequency[names(screeningFrequency) %in% drugCids]
+            screeningFrequency <- colSums(1*(targetMatrixActives > 0))
+            drugScreeningFrequency <- screeningFrequency[names(screeningFrequency) %in% drugCids]
+        }
     }
 
     # get activity frequency
@@ -123,3 +125,20 @@ results[,3] <- as.integer(results[,3])
 colnames(results) <- c("domain", "category", "frequency")
 
 save(list=c("totalTargets", "results"), file=outputFile)
+
+gc()
+registerDoMC(cores=cores)
+set.seed(123)
+results <- foreach(i = multiTargetDomains, .combine="rbind", .packages=c("bioassayR")) %dorng% {
+    print(i)
+    tempDBC <- connectBioassayDB(databaseFile)
+    result <- domainStats(i, tempDBC, equalizeMedians=FALSE)
+    disconnectBioassayDB(tempDBC)
+    result
+}
+
+results <- data.frame(results, stringsAsFactors=FALSE)
+results[,3] <- as.integer(results[,3])
+colnames(results) <- c("domain", "category", "frequency")
+
+save(list=c("totalTargets", "results"), file="working/computeSelectivitySpecificDomain_noexclusion.RData")
