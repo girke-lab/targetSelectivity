@@ -4,7 +4,7 @@
 
 library(igraph)
 
-# read in domain co-occurance table
+# read in domain co-occurrence table
 ds_domainTable <- read.table("working/domainComposition.tab", header=TRUE, stringsAsFactors=FALSE)
 ds_domainTable <- ds_domainTable[! duplicated(ds_domainTable[,1]),c(1,3)]
 
