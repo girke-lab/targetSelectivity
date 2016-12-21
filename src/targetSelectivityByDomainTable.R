@@ -26,7 +26,7 @@ outputFile <- commandArgs(trailingOnly=TRUE)[8]
 if(is.null(commandArgs(trailingOnly=TRUE)[1])){
     targetSelectivityByDomainFile <- "working/targetSelectivityByDomain.tab"
     pfamClansFile <- "working/Pfam-A.clans.tsv"
-    databaseFile <- "~/Downloads/pubchem_protein_only.sqlite"
+    databaseFile <- "working/bioassayDatabaseSingleTarget.sqlite"
     pfam2goslimFile <- "working/domainGOslimAnnotations.csv"
     humanDomainsTwoCols <- "working/humanDomainsTwoCols"
     targetGOslimAnnotationsFile <- "working/targetGOslimAnnotations.csv"
@@ -58,9 +58,9 @@ statsTable <- statsTable[statsTable$totalOther > 9,]
 humanStatsTable <- statsTable[row.names(statsTable) %in% humanDomainsAll,]
 humanStatsTable <- humanStatsTable[row.names(humanStatsTable) %in% longDomains,]
 topTargets <- humanStatsTable[order(humanStatsTable$drugdomain, decreasing=T),]
-topTargets <- topTargets[topTargets$drugdomain > 20,]
+topTargets <- topTargets[topTargets$drugdomain > 16.5,]
 bottomTargets <- humanStatsTable[order(humanStatsTable$drugdomain, decreasing=F),]
-bottomTargets <- bottomTargets[bottomTargets$drugdomain < 6,]
+bottomTargets <- bottomTargets[bottomTargets$drugdomain < 6.5,]
 
 mergedTable <- rbind(topTargets, bottomTargets)
 mergedTable <- round(mergedTable, 2)
@@ -76,6 +76,18 @@ newNames <- as.character(pfamClans[match(slashTable[,1], pfamClans[,1]),5])
 newNames[is.na(newNames)] <- ""
 slashTable[,1] <- paste(slashTable[,1], newNames)
 # slashTable[,1] <- gsub("^(.{40}).*$", "\\1...", slashTable[,1])
+
+# remove DUFs (domain of unknown function)
+domainList <- as.character(unique(slashTable[,1]))
+dufList <- domainList[grepl("DUF\\d{4}", domainList)]
+slashTable <- slashTable[! slashTable[,1] %in% dufList,]
+
+# keep only one co-occurance for each domain
+source("src/getDomainSubset.R")
+domainList <- as.character(unique(slashTable[,1]))
+domainList <- gsub("\\W.*", "", domainList)
+uniques <- getUniqueDomainSet(domainList)
+slashTable <- slashTable[gsub("\\W.*", "", slashTable[,1]) %in% uniques,]
 
 xtmp <- xtable(slashTable, caption="Selectivity by domain", label="selectivityByDomain")
 print(xtmp, type="latex", file=outputFile, include.rownames=F)

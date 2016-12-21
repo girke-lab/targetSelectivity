@@ -10,20 +10,17 @@ library(xtable)
 
 # parse input options
 inputFile <- commandArgs(trailingOnly=TRUE)[1]
-domainClustersFile <- commandArgs(trailingOnly=TRUE)[2]
-outputFile <- commandArgs(trailingOnly=TRUE)[3]
+outputFile <- commandArgs(trailingOnly=TRUE)[2]
 
 # test code for running without make:
 if(is.na(commandArgs(trailingOnly=TRUE)[1])){
     inputFile <- "working/computeSelectivitySpecificDomain_noexclusion.RData"
-    domainClustersFile <- "working/domainClusters.csv"
     outputFile <- "working/selectivitySpecificDomains_noexclusion.pdf"
 }
 
 # parse input files
 load(inputFile) # loads results
 print(length(unique(results$domain)))
-domainClusters <- read.csv(domainClustersFile)
 
 # make table of number of compounds
 splitFreqs <- split(results$category, results$domain)
@@ -38,19 +35,12 @@ keepDomains <- row.names(domainScreeningCounts)[(domainScreeningCounts[,1] > 9) 
 domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% keepDomains,]
 results <- results[results$domain %in% keepDomains,]
 
-# keep only representative domains for each shared-target domain cluster
-repDomains <- unique(domainClusters$Cluster)
-# domainScreeningCounts <- domainScreeningCounts[rownames(domainScreeningCounts) %in% repDomains,]
-results <- results[results$domain %in% repDomains,]
-
-# add clusters to table
-clusters <- as.character(domainClusters$Cluster[match(row.names(domainScreeningCounts), domainClusters$Domain)])
-trans <- 1:length(unique(clusters))
-names(trans) <- unique(clusters)
-cluster <- trans[clusters]
-dnames <- row.names(domainScreeningCounts)
-domainScreeningCounts <- cbind(cluster, domainScreeningCounts)
-row.names(domainScreeningCounts) <- dnames
+# keep only one co-occurance for each domain
+# source("src/getDomainSubset.R")
+domainList <- as.character(unique(results$domain))
+uniques <- getUniqueDomainSet(domainList)
+results <- results[results$domain %in% uniques,]
+domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% uniques,]
 
 # save table of number of screened compounds
 xtmp <- xtable(domainScreeningCounts, caption="Selectivity by domain", label="domainScreeningCounts")
@@ -67,16 +57,16 @@ length(colnames(medianScreened)[medianScreened[1,] > medianScreened[2,]])
 length(colnames(medianScreened)[medianScreened[1,] == medianScreened[2,]])
 length(colnames(medianScreened)[medianScreened[1,] < medianScreened[2,]])
 
-# eliminate those where median is identical
-splitFreqs <- split(results, results$domain)
-medianActives <- sapply(splitFreqs, function(x){
-    drugMean <- median(x[x$category == "drugActiveFrequency",3])
-    nonDrugMean <- median(x[x$category == "nonDrugActiveFrequency",3])
-    return(c(drugMean, nonDrugMean))
-})
-unequalMedianDomains <- colnames(medianActives)[medianActives[1,] != medianActives[2,]]
-results <- results[results$domain %in% unequalMedianDomains,]
-domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% unequalMedianDomains,]
+# # eliminate those where median is identical
+# splitFreqs <- split(results, results$domain)
+# medianActives <- sapply(splitFreqs, function(x){
+#     drugMean <- median(x[x$category == "drugActiveFrequency",3])
+#     nonDrugMean <- median(x[x$category == "nonDrugActiveFrequency",3])
+#     return(c(drugMean, nonDrugMean))
+# })
+# unequalMedianDomains <- colnames(medianActives)[medianActives[1,] != medianActives[2,]]
+# results <- results[results$domain %in% unequalMedianDomains,]
+# domainScreeningCounts <- domainScreeningCounts[row.names(domainScreeningCounts) %in% unequalMedianDomains,]
 
 # fix labels
 activeResults <- results[results$category %in% c("drugActiveFrequency", "nonDrugActiveFrequency"),]

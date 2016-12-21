@@ -101,7 +101,8 @@ names(humanDomainAbundanceCol) <- row.names(domainCounts)
 domainCounts <- cbind(domainCounts, humanDomainAbundanceCol)
 
 # remove non-human domains
-domainCounts <- domainCounts[domainCounts$humanDomainAbundanceCol > 0,]
+# domainCounts <- domainCounts[domainCounts$humanDomainAbundanceCol > 0,]
+domainCounts <- domainCounts[domainCounts$Freq > 0,]
 
 # remove domains with under 100 residues
 longDomains <- PfamResidueLengths[PfamResidueLengths[,2] > 99,1]
@@ -138,8 +139,20 @@ domainCountsMelted <- domainCountsMelted[! ((domainCountsMelted$value == 0) & (d
 
 # keep only the top and bottom scoring domains
 # n <- c(1:25, (length(domainOrder)-25):length(domainOrder))
-n <- 1:35
+n <- 1:100
 domainCountsMelted <- domainCountsMelted[domainCountsMelted$GOdomain %in% domainOrder[n],]
+
+# remove DUFs (domain of unknown function)
+domainList <- as.character(unique(domainCountsMelted$GOdomain))
+dufList <- domainList[grepl("DUF\\d{4}", domainList)]
+domainCountsMelted <- domainCountsMelted[! domainCountsMelted$GOdomain %in% dufList,]
+
+# keep only one co-occurance for each domain
+source("src/getDomainSubset.R")
+domainList <- as.character(unique(domainCountsMelted$GOdomain))
+domainList <- gsub("\\W.*", "", domainList)
+uniques <- getUniqueDomainSet(domainList)
+domainCountsMelted <- domainCountsMelted[gsub("\\W.*", "", domainCountsMelted$GOdomain) %in% uniques,]
 
 # rename activity column
 colnames(domainCountsMelted)[4] <- "Legend"
@@ -200,8 +213,20 @@ domainCountsMelted <- domainCountsMelted[! ((domainCountsMelted$value == 0) & (d
 
 # keep only the top and bottom scoring domains
 # n <- c(1:25, (length(domainOrder)-25):length(domainOrder))
-n <- 1:35
+n <- 1:60
 domainCountsMelted <- domainCountsMelted[domainCountsMelted$GOdomain %in% domainOrder[n],]
+
+# remove DUFs (domain of unknown function)
+domainList <- as.character(unique(domainCountsMelted$GOdomain))
+dufList <- domainList[grepl("DUF\\d{4}", domainList)]
+domainCountsMelted <- domainCountsMelted[! domainCountsMelted$GOdomain %in% dufList,]
+
+# keep only one co-occurance for each domain
+# source("src/getDomainSubset.R")
+domainList <- as.character(unique(domainCountsMelted$GOdomain))
+domainList <- gsub("\\W.*", "", domainList)
+uniques <- getUniqueDomainSet(domainList)
+domainCountsMelted <- domainCountsMelted[gsub("\\W.*", "", domainCountsMelted$GOdomain) %in% uniques,]
 
 # rename activity column
 colnames(domainCountsMelted)[4] <- "Legend"
