@@ -29,6 +29,7 @@ This analysis pipeline is designed to run in parallel on a CentOS linux system. 
 * **/src** - Source code for each analysis step
 * **/working** - Temporary folder with results of each analysis step
 
-## This data analysis pipeline requires many R packages, including the following custom R packages
+## This data analysis pipeline requires many R packages, including the following custom R packages created specifically for this project
 * https://github.com/TylerBackman/BicBin
 * https://github.com/TylerBackman/clusteval/tree/biggerInts
+* https://github.com/TylerBackman/bioassayR
