@@ -8,11 +8,11 @@ and target druggability in large public bioactivity data.
 Note that this pipeline downloads the latest data from online databases,
 and as a result the output may change over time as these public resources are updated.
 
-# Citation
+## Citation
 
-Backman TW, Evans DS, Girke T.
-Large-scale bioactivity analysis of the small-molecule assayed proteome.
-PLOS ONE. 2017 Feb 8;12(2):e0171413.
+Backman TW, Evans DS, Girke T.  
+Large-scale bioactivity analysis of the small-molecule assayed proteome.  
+PLOS ONE. 2017 Feb 8;12(2):e0171413.  
 http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0171413
 
 ## System requirements
