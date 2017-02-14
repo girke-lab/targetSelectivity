@@ -22,7 +22,7 @@ This analysis pipeline is designed to run in parallel on a CentOS linux system. 
 * Export (with the Bash shell) a viable ramdisk location for the database as shown in sample_make.sh
 * Export (with the Bash shell) the number of cpu cores (64 or more recommended) as shown in sample_make.sh
 * Install any needed R packages or other software
-* Run 'make -e working/<filename>' to create any desired output file described in the makefiles
+* Run 'make -e working/targetFilename' to create any desired output file described in the makefiles (replace targetFilename with desired output file)
 
 ## Overall folder structure
 * **/** - Makefiles, describing all analysis steps
